@@ -1,0 +1,132 @@
+# ============================================
+# CV Tracking Pipeline Configuration
+# ============================================
+
+# General Settings
+general:
+  output_dir: "outputs"
+  temp_dir: "temp"
+  device: "cuda"  # cuda, cpu, or mps
+  verbose: true
+
+# Video Preprocessing
+preprocessing:
+  frame_skip: 1  # Process every Nth frame (1 = all frames)
+  max_dimension: 1920  # Resize if larger
+  target_fps: null  # null = use original FPS
+
+# Detection (YOLOv8/v9)
+detection:
+  model: "yolov8m.pt"  # yolov8n (fastest), yolov8s, yolov8m (balanced), yolov8l, yolov8x (most accurate)
+  confidence_threshold: 0.35
+  nms_iou_threshold: 0.45
+  classes: [0]  # 0 = person only
+  imgsz: 640  # Smaller size for faster processing
+  half: true  # FP16 inference for speed
+
+# Tracking
+tracking:
+  primary_tracker: "kalman"  # kalman filter tracker
+  secondary_tracker: null  # Not used
+  
+  # Kalman tracker settings
+  bytetrack:
+    max_age: 30
+    min_hits: 3
+    iou_threshold: 0.3
+    
+  botsort:
+    track_thresh: 0.5
+    track_buffer: 30
+    match_thresh: 0.8
+    cmc_method: "ecc"  # Camera motion compensation
+    
+  # Ensemble settings
+  ensemble:
+    enabled: false
+    iou_merge_threshold: 0.5
+
+# Re-Identification (MobileNetV3 - fast)
+reid:
+  enabled: true
+  model: "mobilenet_v3_small"  # mobilenet_v3_small (fast), resnet18 (balanced), resnet50 (accurate)
+  embedding_dim: 576
+  gallery_size: 50  # Max embeddings per track
+  similarity_threshold: 0.60
+  update_interval: 10  # Update gallery every N frames (higher = faster)
+
+# Annotation
+annotation:
+  bbox_thickness: 2
+  label_font_scale: 0.6
+  label_font_thickness: 2
+  trajectory_length: 30  # Number of past positions to show
+  show_confidence: true
+  show_track_id: true
+  color_by_team: true  # If team clustering is enabled
+
+# Analytics Enhancements
+analytics:
+  # Movement Heatmap
+  heatmap:
+    enabled: true
+    resolution: [100, 100]
+    gaussian_sigma: 5
+    colormap: "jet"
+    alpha: 0.6
+    
+  # Bird's-eye View
+  birds_eye:
+    enabled: true
+    pitch_width: 105  # meters (football pitch)
+    pitch_height: 68  # meters
+    output_size: [1050, 680]  # pixels
+    auto_detect_corners: true
+    
+  # Team Clustering
+  team_clustering:
+    enabled: true
+    num_teams: 2
+    color_space: "hsv"
+    use_histogram: true
+    
+  # Speed Estimation
+  speed_estimation:
+    enabled: true
+    pixels_per_meter: null  # Auto-calculated from homography
+    smoothing_window: 5
+    
+  # Object Count Over Time
+  count_plot:
+    enabled: true
+    
+  # Trajectory Visualization
+  trajectories:
+    enabled: true
+    max_length: 50
+    line_thickness: 2
+    
+  # Evaluation Metrics
+  metrics:
+    enabled: true
+    log_file: "metrics.json"
+
+# Model Comparison
+comparison:
+  enabled: false
+  models: ["yolov8x.pt", "yolov9e.pt"]
+
+# Report Generation
+report:
+  enabled: true
+  format: "markdown"  # markdown, pdf
+  include_screenshots: true
+  num_screenshots: 5
+  api_key: ""  # For AI-assisted report generation
+
+# Streamlit UI
+ui:
+  theme: "dark"
+  page_title: "Sports Video Tracking Pipeline"
+  page_icon: "🎯"
+  max_upload_size: 500  # MB
